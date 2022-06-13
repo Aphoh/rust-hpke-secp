@@ -21,6 +21,12 @@ pub struct PublicKey(k256::PublicKey);
 #[derive(Clone)]
 pub struct PrivateKey(k256::SecretKey);
 
+impl PrivateKey {
+    pub fn public(&self) -> PublicKey {
+        PublicKey(self.0.public_key())
+    }
+}
+
 // The underlying type is zeroize-on-drop
 /// A bare DH computation result
 pub struct KexResult(k256::ecdh::SharedSecret);
@@ -188,7 +194,7 @@ mod tests {
             DhKeyExchange,
         },
         kdf::HkdfSha256,
-        kem::DhK256HkdfSha256,
+        kem::{dhk256_hkdfsha256::EncappedKey, DhK256HkdfSha256},
         op_mode::OpMode,
         test_util::dhkex_gen_keypair,
         Deserializable, OpModeR, Serializable,
@@ -256,37 +262,32 @@ mod tests {
         assert!(new_pk == pk, "public key doesn't serialize correctly");
     }
 
+    use hex_literal::hex;
+    const ENCAP: [u8; 65] = hex!("041c606ea5ec589cd99872ab6bf34330dca8f67ccec9f84f4524ee3416af3bb8dcecfe6f2039a05f555066d1136e608dff880c392d3de2709cc0cee0e194e8195c");
+    const CIHPHERTEXT: [u8; 50]  = hex!("683b4aa1f72a27429b338ae670273ba492c727dadf49228dfe1ec8b46997527fa72ffd4d636ed6548f7dee07e62e02d84267");
+    const TEST_SK: [u8; 32] =
+        hex!("cf7b80d773746c91b08cc188d9b02e541ce11476650d8a8461597ab1d72a0877");
+    const INFO: &[u8] = b"public info string, known to both Alice and Bob";
+    const MSG: &[u8] = b"text encrypted to Bob's public key";
+    const AAD: &[u8] = b"additional public data";
+
     #[test]
-    fn test_sanity() {
-        type Kex = DhK256;
+    fn test_consistency() {
         type Kem = DhK256HkdfSha256;
         type Aead = AesGcm128;
         type Kdf = HkdfSha256;
 
-        let info_str = b"Alice and Bob's weekly chat";
-        let mut csprng = StdRng::from_entropy();
-        let (sk, pk) = dhkex_gen_keypair::<Kex, _>(&mut csprng);
+        let sk = PrivateKey::from_bytes(&TEST_SK).expect("Invalid Secret Key");
 
-        let (encap_key, mut enc_context) = crate::setup_sender::<Aead, Kdf, Kem, _>(
-            &crate::OpModeS::Base,
-            &pk,
-            info_str,
-            &mut csprng,
-        )
-        .unwrap();
-
-        let msg = b"test message";
-        let aad = b"authenticated data";
-
-        let ciphertext = enc_context.seal(msg, aad).expect("Encryption failed");
+        let encap_key = EncappedKey::from_bytes(&ENCAP).expect("Invalid encapped key");
         let mut dec_context =
-            crate::setup_receiver::<Aead, Kdf, Kem>(&OpModeR::Base, &sk, &encap_key, info_str)
+            crate::setup_receiver::<Aead, Kdf, Kem>(&OpModeR::Base, &sk, &encap_key, INFO)
                 .expect("failed to set up receiver");
 
         let plaintext = dec_context
-            .open(&ciphertext, aad)
+            .open(&CIHPHERTEXT, AAD)
             .expect("Invalid ciphertext");
 
-        assert_eq!(plaintext, msg);
+        assert_eq!(plaintext, MSG);
     }
 }
