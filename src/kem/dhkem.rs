@@ -364,3 +364,13 @@ impl_dhkem!(
     0x0010,
     "Represents DHKEM(P-256, HKDF-SHA256)"
 );
+
+#[cfg(feature = "k256")]
+impl_dhkem!(
+    dhk256_hkdfsha256,
+    DhK256HkdfSha256,
+    crate::dhkex::ecdh_k256::DhK256,
+    crate::kdf::HkdfSha256,
+    0x0030,
+    "Represents DHKEM(K-256, HKDF-SHA256)"
+);

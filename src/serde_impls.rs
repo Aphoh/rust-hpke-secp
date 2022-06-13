@@ -90,6 +90,13 @@ impl_serde_noparam!(dhkex::ecdh_nistp::PublicKey);
 #[cfg(feature = "p256")]
 impl_serde_noparam!(kem::dhp256_hkdfsha256::EncappedKey);
 
+#[cfg(feature = "k256")]
+impl_serde_noparam!(dhkex::ecdh_k256::PrivateKey);
+#[cfg(feature = "k256")]
+impl_serde_noparam!(dhkex::ecdh_k256::PublicKey);
+#[cfg(feature = "k256")]
+impl_serde_noparam!(kem::dhk256_hkdfsha256::EncappedKey);
+
 #[cfg(test)]
 mod test {
     use crate::{

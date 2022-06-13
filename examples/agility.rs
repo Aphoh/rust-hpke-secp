@@ -177,6 +177,7 @@ impl KdfAlg {
 enum KemAlg {
     X25519HkdfSha256,
     X448HkdfSha512,
+    DhK256HkdfSha256,
     DhP256HkdfSha256,
     DhP384HkdfSha384,
     DhP521HkdfSha512,
@@ -186,6 +187,7 @@ impl KemAlg {
     fn name(&self) -> &'static str {
         match self {
             KemAlg::DhP256HkdfSha256 => "DhP256HkdfSha256",
+            KemAlg::DhK256HkdfSha256 => "DhK256HkdfSha256",
             KemAlg::DhP384HkdfSha384 => "DhP384HkdfSha384",
             KemAlg::DhP521HkdfSha512 => "DhP521HkdfSha512",
             KemAlg::X25519HkdfSha256 => "X25519HkdfSha256",
@@ -198,6 +200,7 @@ impl KemAlg {
             0x10 => KemAlg::DhP256HkdfSha256,
             0x11 => KemAlg::DhP384HkdfSha384,
             0x12 => KemAlg::DhP521HkdfSha512,
+            0x13 => KemAlg::DhK256HkdfSha256,
             0x20 => KemAlg::X25519HkdfSha256,
             0x21 => KemAlg::X448HkdfSha512,
             _ => return Err(AgileHpkeError::UnknownAlgIdent("KemAlg", id)),
@@ -211,6 +214,7 @@ impl KemAlg {
             KemAlg::DhP256HkdfSha256 => 0x10,
             KemAlg::DhP384HkdfSha384 => 0x11,
             KemAlg::DhP521HkdfSha512 => 0x12,
+            KemAlg::DhK256HkdfSha256 => 0x13,
             KemAlg::X25519HkdfSha256 => 0x20,
             KemAlg::X448HkdfSha512 => 0x21,
         }
@@ -221,6 +225,7 @@ impl KemAlg {
             KemAlg::X25519HkdfSha256 => KdfAlg::HkdfSha256,
             KemAlg::X448HkdfSha512 => KdfAlg::HkdfSha512,
             KemAlg::DhP256HkdfSha256 => KdfAlg::HkdfSha256,
+            KemAlg::DhK256HkdfSha256 => KdfAlg::HkdfSha256,
             KemAlg::DhP384HkdfSha384 => KdfAlg::HkdfSha384,
             KemAlg::DhP521HkdfSha512 => KdfAlg::HkdfSha512,
         }

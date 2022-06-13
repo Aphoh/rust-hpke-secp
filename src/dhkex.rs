@@ -72,6 +72,11 @@ pub(crate) mod ecdh_nistp;
 #[cfg(feature = "p256")]
 pub use ecdh_nistp::DhP256;
 
+#[cfg(feature = "k256")]
+pub(crate) mod ecdh_k256;
+#[cfg(feature = "k256")]
+pub use ecdh_k256::DhK256;
+
 #[cfg(feature = "x25519-dalek")]
 pub(crate) mod x25519;
 #[cfg(feature = "x25519-dalek")]
